@@ -81,17 +81,22 @@ public class DataMonitor implements StatCallback {
         switch (rc) {
             case Code.Ok:
                 exists = true;
+                System.out.println("Code.Ok");
                 break;
             case Code.NoNode:
                 exists = false;
+                System.out.println("Code.NoNode");
                 break;
             case Code.SessionExpired:
+                System.out.println("Code.SessionExpired");
             case Code.NoAuth:
                 dead = true;
+                System.out.println("Code.NoAuth");
                 listener.closing(rc);
                 return;
             default:
                 // Retry errors
+                System.out.println("Retry errors");
                 zk.exists(znode, true, this, null);
                 return;
         }
@@ -99,6 +104,7 @@ public class DataMonitor implements StatCallback {
         byte b[] = null;
         if (exists) {
             try {
+                // 存储当前数据
                 b = zk.getData(znode, false, null);
             } catch (KeeperException e) {
                 // We don't need to worry about recovering now. The watch
@@ -110,6 +116,7 @@ public class DataMonitor implements StatCallback {
         }
         // 如果本次获取信息，跟以前获取不一样，则会调用listener的exists方法
         if ((b == null && b != prevData) || (b != null && !Arrays.equals(prevData, b))) {
+            System.out.println("替换当前数据");
             listener.exists(b);
             prevData = b;
         }
