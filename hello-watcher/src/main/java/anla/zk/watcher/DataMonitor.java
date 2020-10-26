@@ -12,6 +12,7 @@ import org.apache.zookeeper.data.Stat;
 
 
 /**
+ * 执行zk异步api时，接收来自服务端响应
  * @author luoan
  * @version 1.0
  * @date 2020/10/24 17:51
@@ -33,6 +34,10 @@ public class DataMonitor implements StatCallback {
         zk.exists(znode, true, this, null);
     }
 
+    /**
+     * 对受到znode收到各种事情进行判断
+     * @param event
+     */
     public void handle(WatchedEvent event) {
         String path = event.getPath();
         if (event.getType() == Watcher.Event.EventType.None) {
@@ -52,14 +57,18 @@ public class DataMonitor implements StatCallback {
                     break;
             }
         } else {
+            // 如果是我们关心的znode方法，就会调用exists方法，看下znode是否存在。
             if (path != null && path.equals(znode)) {
                 // Something has changed on the node, let's find out
+                // this就是callback
                 zk.exists(znode, true, this, null);
             }
         }
     }
 
     /**
+     * 当这个方法被服务端成功执行，并且发送响应给客户端之后，就会异步执行。
+     * 这个方法，主要是对服务端的返回值进行判断，即对code进行判断
      * StatCallback
      * @param rc
      * @param path
@@ -99,6 +108,7 @@ public class DataMonitor implements StatCallback {
                 return;
             }
         }
+        // 如果本次获取信息，跟以前获取不一样，则会调用listener的exists方法
         if ((b == null && b != prevData) || (b != null && !Arrays.equals(prevData, b))) {
             listener.exists(b);
             prevData = b;

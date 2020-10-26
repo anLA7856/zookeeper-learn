@@ -12,6 +12,11 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 /**
+ *
+ *
+ * 1. 参数里面输入 localhost:2181 /watch data/znode-data scripts/seq.sh
+ * 2. 连接zkclient中，执行 create /watch hi
+ * 收znode数据变化通知的。
  * @author luoan
  * @version 1.0
  * @date 2020/10/24 17:51
@@ -29,6 +34,7 @@ public class Executor implements Watcher, Runnable, DataMonitor.DataMonitorListe
         throws KeeperException, IOException {
         this.pathname = filename;
         this.exec = exec;
+        // 创建zk实例, Executor的process会受到znode的数据变化通知
         zk = new ZooKeeper(hostPort, 3000, this);
         dm = new DataMonitor(zk, znode, this);
     }
@@ -52,6 +58,7 @@ public class Executor implements Watcher, Runnable, DataMonitor.DataMonitorListe
     }
 
     /**
+     * 在znode发生任何变化时，这个方法都会被调用
      * Watcher
      * @param event
      */
@@ -87,6 +94,7 @@ public class Executor implements Watcher, Runnable, DataMonitor.DataMonitorListe
     }
 
     /**
+     * 执行业务逻辑的监听器
      * DataMonitor.DataMonitorListener
      * @param data
      */
@@ -121,6 +129,7 @@ public class Executor implements Watcher, Runnable, DataMonitor.DataMonitorListe
             }
             try {
                 System.out.println("Starting child");
+                // 执行一个命令
                 child = Runtime.getRuntime().exec(exec);
                 new StreamWriter(child.getInputStream(), System.out);
                 new StreamWriter(child.getErrorStream(), System.err);
